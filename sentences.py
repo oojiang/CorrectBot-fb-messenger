@@ -3,27 +3,29 @@ import lemminflect
 from lemminflect import getLemma, getInflection
 nlp = spacy.load('en_core_web_sm')
 
-def extract_verb_phrase(sent_doc):
+def extract_verb_slices(sent_doc):
     """
     Slices the verb and its aux/neg children from sent_doc.
     @param sent_doc: a spacy doc, containing a sentence.
-    @return: a spacy span, or False if the verb phrase could not be extracted.
+    @return: a list of spacy spans, each representing a different verb and its aux/neg children.
     """
-    verbi = -1
+    verbs = []
     for token in sent_doc:
-        if token.dep_ == 'ROOT':
-            verbi = token.i
-    if verbi == -1:
-        return False
-    start, end = verbi, verbi + 1
-    for token in sent_doc:
-        if token.dep_ == 'aux' or token.dep_ == 'auxpass' or token.dep_ == 'neg':
-            if token.head == sent_doc[verbi]:
-                if token.i < start:
-                    start = token.i
-                elif token.i + 1 > end:
-                    end = token.i + 1
-    return sent_doc[start:end]
+        if token.pos_ == 'VERB':
+            verbs.append(token)
+
+    verb_slices = []
+    for verb in verbs:
+        start, end = verb.i, verb.i + 1
+        for token in sent_doc:
+            if token.head == verb:
+                if token.dep_ == 'aux' or token.dep_ == 'auxpass' or token.dep_ == 'neg':
+                    if token.i < start:
+                        start = token.i
+                    elif token.i + 1 > end:
+                        end = token.i + 1
+        verb_slices.append(sent_doc[start:end])
+    return verb_slices
 
 def tense_of_verb(verb_str):
     """
@@ -49,60 +51,59 @@ def tense_of_verb(verb_str):
     else:
         return ('?', lemm_str)
 
-def negate(sent_str):
+def negate(sent_doc, verb_slices, to_neg):
     """
-    Returns the negation of a simple sentence. 
-    @param sent_str: a str containing a sentence.
-    @return: the negation of sent_str. 
-        Returns False if the sentence could not be negated (e.g. the sentence is a question)
+    @param sent_doc: A spacy doc containing a sentence.
+    @param verb_slices: result of calling extract_verb_slices on sent_doc.
+    @param to_neg: a list of booleans. to_neg[i] is True if ith verb should be negated
+        and False if it shouldn't be. len(to_neg) should equal the number of verbs in the sentence.
+    @return: a string containing the resulting sentence.
     """
+    negated_sent = []
+    wi = 0;
+    vi = 0;
+    while wi < len(sent_doc):
+        if vi >= len(verb_slices) or wi != verb_slices[vi][0].i:
+            negated_sent.append(sent_doc[wi].text)
+            wi += 1
+        #if wi == verb_slices[vi][0].i:
+        else:
+            if to_neg[vi]:
+                verb = [token for token in verb_slices[vi] if token.pos_ == 'VERB'][0]
+                tense, base = tense_of_verb(verb.text)
+                if tense == 'AUX':
+                    negated_sent.extend([verb.text, 'not'])
+                elif tense == 'VBD':
+                    negated_sent.extend(['did', 'not', base])
+                elif tense == 'VBP':
+                    negated_sent.extend(['do', 'not', base])
+                elif tense == 'VBZ':
+                    negated_sent.extend(['does', 'not', base])
+                else:
+                    negated_sent.extend(['do', 'not', base])
+            else:
+                negated_sent.extend([token.text for token in verb_slices[vi]])
+            wi = verb_slices[vi][-1].i + 1
+            vi += 1
+    return negated_sent
 
+def qualify(sent_str):
+    """
+    @param sent_str: a string containing a sentence.
+    @return: a list containing all alternate forms of the sentence.
+    """
     sent_doc = nlp(sent_str)
-
     if sent_doc[-1].text != "." and sent_doc[-1].text != "!":
         return False
 
-    verb_slice = extract_verb_phrase(sent_doc)
-
-    if not verb_slice:
+    verb_slices = extract_verb_slices(sent_doc)
+    if not verb_slices:
         return False
 
-    negated_sent = ''
-    first_neg, first_aux = (-1, -1), (-1, -1)
-    root_verb = (-1, -1)
-    verb_str = ''
-    for token in verb_slice:
-        if token.dep_ == 'neg' and first_neg == (-1, -1):
-            first_neg = (token.idx, sent_doc[token.i + 1].idx)
-        elif (token.dep_ == 'aux' or token.dep_ == 'auxpass') and first_aux == (-1, -1):
-            first_aux = (token.idx, sent_doc[token.i + 1].idx)
-        elif token.dep_ == 'ROOT':
-            root_verb = (token.idx, sent_doc[token.i + 1].idx)
-            verb_str = token.text
-    if first_neg != (-1, -1):
-        negated_sent = sent_str[:first_neg[0]] + sent_str[first_neg[1]:]
-    elif first_aux != (-1, -1):
-        negated_sent = sent_str[:first_aux[1]] + ' not ' +  sent_str[first_aux[1]:]
-    else:
-        assert len(verb_slice) == 1
-        tense, base = tense_of_verb(verb_str)
-        if tense == 'AUX':
-            negated_sent = sent_str[:root_verb[1]] + ' not ' + sent_str[root_verb[1]:]
-        elif tense == 'VBD':
-            negated_sent = sent_str[:root_verb[0]] + " didn't " + base + ' ' + sent_str[root_verb[1]:]
-        elif tense == 'VBP':
-            negated_sent = sent_str[:root_verb[0]] + " don't " + base + ' ' + sent_str[root_verb[1]:]
-        elif tense == 'VBZ':
-            negated_sent = sent_str[:root_verb[0]] + " doesn't " + base + ' ' + sent_str[root_verb[1]:]
-        else:
-            negated_sent = sent_str[:root_verb[0]] + " don't " + base + ' ' + sent_str[root_verb[1]:]
-    negated_sent = negated_sent.strip()
-    negated_sent = ' '.join(negated_sent.split())
-    if negated_sent[-2:] == " .":
-        negated_sent = negated_sent[0:-2] + negated_sent[-1:]
-    return negated_sent
+    combos = [[]]
+    for i in range(len(verb_slices)):
+        off = [l + [0] for l in combos]
+        on  = [l + [1] for l in combos]
+        combos = on + off
 
-def identify_clauses(sent_doc):
-    """
-    Returns a list of word indeces where each clause starts.
-    """
+    return [negate(sent_doc, verb_slices, to_neg) for to_neg in combos]
