@@ -69,18 +69,32 @@ def negate(sent_doc, verb_slices, to_neg):
         #if wi == verb_slices[vi][0].i:
         else:
             if to_neg[vi]:
+
+                neg = [token for token in verb_slices[vi] if token.dep_ == 'neg']
+                aux = [token for token in verb_slices[vi] if token.dep_ in ['aux', 'auxpass']]
                 verb = [token for token in verb_slices[vi] if token.pos_ == 'VERB'][0]
-                tense, base = tense_of_verb(verb.text)
-                if tense == 'AUX':
-                    negated_sent.extend([verb.text, 'not'])
-                elif tense == 'VBD':
-                    negated_sent.extend(['did', 'not', base])
-                elif tense == 'VBP':
-                    negated_sent.extend(['do', 'not', base])
-                elif tense == 'VBZ':
-                    negated_sent.extend(['does', 'not', base])
+
+                if neg:
+                    for token in verb_slices[vi]:
+                        if token.dep_ != 'neg':
+                            negated_sent.append(token.text)
+                elif aux:
+                    for token in verb_slices[vi]:
+                        negated_sent.append(token.text)
+                        if token == aux[0]:
+                            negated_sent.append('not')
                 else:
-                    negated_sent.extend(['do', 'not', base])
+                    tense, base = tense_of_verb(verb.text)
+                    if tense == 'AUX':
+                        negated_sent.extend([verb.text, 'not'])
+                    elif tense == 'VBD':
+                        negated_sent.extend(['did', 'not', base])
+                    elif tense == 'VBP':
+                        negated_sent.extend(['do', 'not', base])
+                    elif tense == 'VBZ':
+                        negated_sent.extend(['does', 'not', base])
+                    else:
+                        negated_sent.extend(['do', 'not', base])
             else:
                 negated_sent.extend([token.text for token in verb_slices[vi]])
             wi = verb_slices[vi][-1].i + 1
@@ -94,16 +108,25 @@ def qualify(sent_str):
     """
     sent_doc = nlp(sent_str)
     if sent_doc[-1].text != "." and sent_doc[-1].text != "!":
-        return False
+        return [False]
 
     verb_slices = extract_verb_slices(sent_doc)
+    print(verb_slices)
     if not verb_slices:
-        return False
+        return [False]
 
     combos = [[]]
     for i in range(len(verb_slices)):
         off = [l + [0] for l in combos]
         on  = [l + [1] for l in combos]
-        combos = on + off
+        combos = off + on
 
-    return [negate(sent_doc, verb_slices, to_neg) for to_neg in combos]
+    sent_lists = [negate(sent_doc, verb_slices, to_neg) for to_neg in combos]
+    sents = []
+    for sl in sent_lists:
+        if sl[-1] in [".", "!", "?"]:
+            s = " ".join(sl[:-1]) + sl[-1]
+        else:
+            s = " ".join(sl)
+        sents.append(s)
+    return sents
