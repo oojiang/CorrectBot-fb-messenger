@@ -13,6 +13,7 @@ def extract_verb_slices(sent_doc):
     for token in sent_doc:
         if token.dep_ == 'ROOT':
             root = token
+            root.pos_ = 'VERB'
 
     queue = [root]
     verbs = [root]
@@ -22,7 +23,20 @@ def extract_verb_slices(sent_doc):
             if token.dep_ in ['ccomp', 'conj']:
                 queue.append(token)
                 verbs.append(token)
-
+                token.pos_ = 'VERB'
+    
+    verb_slices = []
+    for verb in verbs:
+        start, end = verb.i, verb.i + 1
+        for token in sent_doc:
+            if token.head == verb:
+                if token.dep_ == 'aux' or token.dep_ == 'auxpass' or token.dep_ == 'neg':
+                    if token.i < start:
+                        start = token.i
+                    elif token.i + 1 > end:
+                        end = token.i + 1
+        verb_slices.append(sent_doc[start:end])
+    return verb_slices
     
 
 
@@ -71,7 +85,8 @@ def negate(sent_doc, verb_slices, to_neg):
 
                 neg = [token for token in verb_slices[vi] if token.dep_ == 'neg']
                 aux = [token for token in verb_slices[vi] if token.dep_ in ['aux', 'auxpass']]
-                verb = [token for token in verb_slices[vi] if token.pos_ == 'VERB'][0]
+                verbs = [token for token in verb_slices[vi] if token.pos_ == 'VERB']
+                verb = verbs[0]
 
                 if neg:
                     for token in verb_slices[vi]:
@@ -110,7 +125,6 @@ def qualify(sent_str):
         return [False]
 
     verb_slices = extract_verb_slices(sent_doc)
-    print(verb_slices)
     if not verb_slices:
         return [False]
 
