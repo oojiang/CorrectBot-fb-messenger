@@ -19,7 +19,11 @@ def extract_verb_slices(sent_doc):
     while queue:
         v = queue.pop(0)
         for token in v.children:
-            if #TODO
+            if token.dep_ in ['ccomp', 'conj']:
+                queue.append(token)
+                verbs.append(token)
+
+    
 
 
 def tense_of_verb(verb_str):
