@@ -9,23 +9,18 @@ def extract_verb_slices(sent_doc):
     @param sent_doc: a spacy doc, containing a sentence.
     @return: a list of spacy spans, each representing a different verb and its aux/neg children.
     """
-    verbs = []
+    root = None
     for token in sent_doc:
-        if token.pos_ == 'VERB':
-            verbs.append(token)
+        if token.dep_ == 'ROOT':
+            root = token
 
-    verb_slices = []
-    for verb in verbs:
-        start, end = verb.i, verb.i + 1
-        for token in sent_doc:
-            if token.head == verb:
-                if token.dep_ == 'aux' or token.dep_ == 'auxpass' or token.dep_ == 'neg':
-                    if token.i < start:
-                        start = token.i
-                    elif token.i + 1 > end:
-                        end = token.i + 1
-        verb_slices.append(sent_doc[start:end])
-    return verb_slices
+    queue = [root]
+    verbs = [root]
+    while queue:
+        v = queue.pop(0)
+        for token in v.children:
+            if #TODO
+
 
 def tense_of_verb(verb_str):
     """
