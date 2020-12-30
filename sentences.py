@@ -1,4 +1,6 @@
 import spacy
+from spacy.matcher import Matcher
+from spacy.util import filter_spans
 import lemminflect
 from lemminflect import getLemma, getInflection
 nlp = spacy.load('en_core_web_sm')
@@ -9,39 +11,18 @@ def extract_verb_slices(sent_doc):
     @param sent_doc: a spacy doc, containing a sentence.
     @return: a list of spacy spans, each representing a different verb and its aux/neg children.
     """
-    # Find base verbs
-    root = None
-    for token in sent_doc:
-        if token.dep_ == 'ROOT':
-            root = token
-            root.pos_ = 'VERB'
-
-    queue = [root]
-    verbs = [root]
-    while queue:
-        v = queue.pop(0)
-        for token in v.children:
-            if token.dep_ in ['ccomp', 'conj', 'xcomp']:
-                queue.append(token)
-                verbs.append(token)
-                token.pos_ = 'VERB'
+    # solution from: https://stackoverflow.com/questions/47856247/extract-verb-phrases-using-spacy
+    pattern = [{'POS': 'VERB', 'OP': '?'},
+               {'POS': 'ADV', 'OP': '*'},
+               {'POS': 'AUX', 'OP': '*'},
+               {'POS': 'VERB', 'OP': '+'}]
+    matcher = Matcher(nlp.vocab)
+    matcher.add("Verb Phrase", None, pattern)
+    matches = matcher(sent_doc)
+    spans = [sent_doc[start:end] for _, start, end in matches]
+    return filter_spans(spans)
     
-    # Find aux/neg parts of verb phrases
-    verb_slices = []
-    for verb in verbs:
-        start, end = verb.i, verb.i + 1
-        for token in sent_doc:
-            if token.head == verb:
-                if token.dep_ == 'aux' or token.dep_ == 'auxpass' or token.dep_ == 'neg':
-                    if token.i < start:
-                        start = token.i
-                    elif token.i + 1 > end:
-                        end = token.i + 1
-        verb_slices.append(sent_doc[start:end])
-    return verb_slices
     
-
-
 def tense_of_verb(verb_str):
     """
     Identifies the verb tense of a word, and returns it in a tuple along with its base word.
