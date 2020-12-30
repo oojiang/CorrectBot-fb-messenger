@@ -9,6 +9,7 @@ def extract_verb_slices(sent_doc):
     @param sent_doc: a spacy doc, containing a sentence.
     @return: a list of spacy spans, each representing a different verb and its aux/neg children.
     """
+    # Find base verbs
     root = None
     for token in sent_doc:
         if token.dep_ == 'ROOT':
@@ -20,11 +21,12 @@ def extract_verb_slices(sent_doc):
     while queue:
         v = queue.pop(0)
         for token in v.children:
-            if token.dep_ in ['ccomp', 'conj']:
+            if token.dep_ in ['ccomp', 'conj', 'xcomp']:
                 queue.append(token)
                 verbs.append(token)
                 token.pos_ = 'VERB'
     
+    # Find aux/neg parts of verb phrases
     verb_slices = []
     for verb in verbs:
         start, end = verb.i, verb.i + 1
@@ -135,11 +137,20 @@ def qualify(sent_str):
         combos = off + on
 
     sent_lists = [negate(sent_doc, verb_slices, to_neg) for to_neg in combos]
-    sents = []
-    for sl in sent_lists:
-        if sl[-1] in [".", "!", "?"]:
-            s = " ".join(sl[:-1]) + sl[-1]
-        else:
-            s = " ".join(sl)
-        sents.append(s)
+    sents = [sent_join(s) for s in sent_lists]
     return sents
+
+def sent_join(sent_list):
+    """
+    @param sent_list: a list of strs, each representing a word or punctuation.
+    @return: a string with the full sentence, with spaces between words when needed.
+    """
+    PUNCT = [".", "?", "!", ",", "-", "(", ")", "[", "]", "'", '"']
+    result = sent_list[0]
+    for i in range(1, len(sent_list)):
+        token = sent_list[i]
+        if any(p in token for p in PUNCT):
+            result += token
+        else:
+            result += " " + token
+    return result

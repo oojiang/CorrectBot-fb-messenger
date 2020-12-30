@@ -24,11 +24,13 @@ sents = [
     "Under the tree lay a pride of lions, and elephant slept and ate.",
     "Yesterday Donna watched a movie, cleaned her apartment and was making lunch.",
     "Yesterday Donna was happy, had watched a movie, did not clean her apartment and was making and eating lunch.",
+    "I like drinking iced coffee.",
+    'Fred may be being judged to have been deceived by the explanation.',
         ]
 
 if __name__ == '__main__':
     for sent in sents:
-        print(sent)
+        #print(sent)
         for s in sentences.qualify(sent):
             print(s)
         print()
