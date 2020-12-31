@@ -68,7 +68,7 @@ def send_message(user_id, text):
     data = json.dumps({
         "messaging_type": "RESPONSE",
         "recipient": {
-            "id": str(user_id)
+            "id": user_id
         },
         "message": {
             "text": text
