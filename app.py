@@ -79,7 +79,7 @@ def send_message(user_id, text):
     })
     log('ATTEMPTING TO SEND MESSAGE: ' + text)
     log('DATA: \n' + data)
-    r = requests.post(url, params=params, data = data)
+    r = requests.post(url, params=params, headers=headers, data = data)
     if r.status_code != 200:
         log(r.status_code)
         log(r.text)
