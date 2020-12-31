@@ -26,6 +26,7 @@ sents = [
     "Yesterday Donna was happy, had watched a movie, did not clean her apartment and was making and eating lunch.",
     "I like drinking iced coffee.",
     'Fred may be being judged to have been deceived by the explanation.',
+    'I hate you, and you hate me.'
         ]
 
 if __name__ == '__main__':

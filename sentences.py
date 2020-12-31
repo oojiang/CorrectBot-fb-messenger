@@ -105,11 +105,11 @@ def qualify(sent_str):
     """
     sent_doc = nlp(sent_str)
     if sent_doc[-1].text != "." and sent_doc[-1].text != "!":
-        return [False]
+        return []
 
     verb_slices = extract_verb_slices(sent_doc)
     if not verb_slices:
-        return [False]
+        return []
 
     combos = [[]]
     for i in range(len(verb_slices)):
@@ -135,3 +135,21 @@ def sent_join(sent_list):
         else:
             result += " " + token
     return result
+
+def changepov(sent_str):
+    sent_doc = nlp(sent_str)
+    sent_list = []
+    for token in sent_doc:
+        if token.lower_ in ["i", "me"]:
+            if token.i == 0:
+                sent_list.append("You")
+            else:
+                sent_list.append("you")
+        elif token.lower_ == "you":
+            if token.dep_ == 'nsubj':
+                sent_list.append("I")
+            else:
+                sent_list.append("me")
+        else:
+            sent_list.append(token.text)
+    return sent_join(sent_list)
