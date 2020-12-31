@@ -60,7 +60,7 @@ def gen_response(user_text):
             out += "\nor maybe: " + sents.pop(0)
         return out
     else:
-        return "Hi! Please tell me something you believe! I'm a little stupid, so please use complete sentences."
+        return "Hi! I believe that all things are true, unless they are not true! What is something that you believe?"
 
 def send_message(user_id, text):
     url = "https://graph.facebook.com/v9.0/me/messages"
@@ -74,6 +74,7 @@ def send_message(user_id, text):
             "text": text
         }
     })
+    log('ATTEMPTING TO SEND MESSAGE:', text)
     r = requests.post(url, params=params, data = data)
     if r.status_code != 200:
         log(r.status_code)
