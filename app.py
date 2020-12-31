@@ -74,7 +74,7 @@ def send_message(user_id, text):
             "text": text
         }
     })
-    log('ATTEMPTING TO SEND MESSAGE:', text)
+    log('ATTEMPTING TO SEND MESSAGE: ' + text)
     r = requests.post(url, params=params, data = data)
     if r.status_code != 200:
         log(r.status_code)
