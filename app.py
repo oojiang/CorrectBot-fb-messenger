@@ -65,6 +65,9 @@ def gen_response(user_text):
 def send_message(user_id, text):
     url = "https://graph.facebook.com/v9.0/me/messages"
     params = {"access_token" : ACCESS_TOKEN}
+    headers = {
+        "Content-Type": "application/json"
+    }
     data = json.dumps({
         "messaging_type": "RESPONSE",
         "recipient": {
@@ -75,6 +78,7 @@ def send_message(user_id, text):
         }
     })
     log('ATTEMPTING TO SEND MESSAGE: ' + text)
+    log('DATA: \n' + data)
     r = requests.post(url, params=params, data = data)
     if r.status_code != 200:
         log(r.status_code)
