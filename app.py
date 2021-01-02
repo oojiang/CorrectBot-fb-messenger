@@ -47,7 +47,11 @@ def webhook():
                     sender_id = event['sender']['id']
                     recipient_id = event['recipient']['id']
                     message_text = event['message']['text']
-                    send_message(sender_id, gen_response(message_text))
+                    try:
+                        send_message(sender_id, gen_response(message_text))
+                    except BaseException: 
+                        log("SOMETHING WENT WRONG")
+                        send_message(sender_id, "Woops, something went wrong (unless nothing did).")
     return 'ok', 200
     
 def gen_response(user_text):
