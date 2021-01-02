@@ -42,6 +42,7 @@ def webhook():
             return 'ok', 200
     except BaseException:
         log("X-HUB-SIGNATURE EXCEPTION")
+        log(BaseException.with_traceback())
         return 'ok', 200
     data = request.get_json()
     if data.get('object') == 'page' and data.get('entry'):
