@@ -15,7 +15,8 @@ def extract_verb_slices(sent_doc):
     pattern = [{'POS': 'VERB', 'OP': '?'},
                {'POS': 'ADV', 'OP': '*'},
                {'POS': 'AUX', 'OP': '*'},
-               {'POS': 'VERB', 'OP': '+'}]
+               {'POS': 'PART', 'OP': '*'},
+               {'POS': {'IN' : ['VERB', 'AUX']}, 'OP': '+'}]
     matcher = Matcher(nlp.vocab)
     matcher.add("Verb Phrase", None, pattern)
     matches = matcher(sent_doc)
@@ -68,7 +69,9 @@ def negate(sent_doc, verb_slices, to_neg):
 
                 neg = [token for token in verb_slices[vi] if token.dep_ == 'neg']
                 aux = [token for token in verb_slices[vi] if token.dep_ in ['aux', 'auxpass']]
-                verbs = [token for token in verb_slices[vi] if token.pos_ == 'VERB']
+                verbs = [token for token in verb_slices[vi] if token.pos_ == 'VERB' or 
+                    (token.pos_ == 'AUX' and token.dep_ in ['ROOT', 'ccomp', 'conj', 'xcomp'])]
+                print('DDD', verbs)
                 verb = verbs[0]
 
                 if neg:

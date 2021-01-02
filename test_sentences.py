@@ -31,7 +31,7 @@ sents = [
 
 if __name__ == '__main__':
     for sent in sents:
-        #print(sent)
+        print(sent)
         for s in sentences.qualify(sent):
             print(s)
         print()
