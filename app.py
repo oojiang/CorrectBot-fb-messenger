@@ -31,14 +31,14 @@ def verify():
     
 @app.route('/', methods=['POST'])
 def webhook():
-    #header_signature = request.headers.get('X-Hub-Signature')
-    #if not header_signature:
-    #    log('X-Hub-Signature missing')
-    #    return "No X-Hub-Signature", 403
-    #expected_signature = hmac.new(APP_SECRET, msg=request.data, digestmod='sha1')
-    #if not hmac.compare_digest(str(header_signature.hexdigest()), str(header_signature)):
-    #    log('X-Hub-Signature mismatch')
-    #    return "X-Hub-Signature mismatch", 403
+    header_signature = request.headers.get('X-Hub-Signature')
+    if not header_signature:
+        log('X-Hub-Signature missing')
+        return 'ok', 200
+    expected_signature = hmac.new(APP_SECRET, msg=request.data, digestmod='sha1')
+    if not hmac.compare_digest(str(header_signature.hexdigest()), str(header_signature)):
+        log('X-Hub-Signature mismatch')
+        return 'ok', 200
     data = request.get_json()
     if data.get('object') == 'page' and data.get('entry'):
         for entry in data['entry']:
