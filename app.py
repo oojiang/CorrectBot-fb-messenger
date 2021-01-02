@@ -32,7 +32,7 @@ def verify():
 @app.route('/', methods=['POST'])
 def webhook():
     try:
-        header_signature = request.headers.get('X-Hub-Signature')
+        header_signature = request.headers.get('X-Hub-Signature').split('=')[1]
         if not header_signature:
             log('X-Hub-Signature missing')
             return 'ok', 200
