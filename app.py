@@ -36,13 +36,13 @@ def webhook():
         if not header_signature:
             log('X-Hub-Signature missing')
             return 'ok', 200
-        expected_signature = hmac.new(APP_SECRET.encode('utf-8'), msg=request.data, digestmod='sha1')
-        if not hmac.compare_digest(str(header_signature.hexdigest()), str(header_signature)):
+        expected_signature = hmac.new(bytes(APP_SECRET, 'utf-8'), 
+                                        msg=bytes(request.data, 'utf-8'), digestmod='sha1').hexdigest()
+        if not hmac.compare_digest(expected_signature, header_signature):
             log('X-Hub-Signature mismatch')
             return 'ok', 200
     except BaseException:
         log("X-HUB-SIGNATURE EXCEPTION")
-        log(BaseException.with_traceback())
         return 'ok', 200
     data = request.get_json()
     if data.get('object') == 'page' and data.get('entry'):
