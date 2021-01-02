@@ -51,6 +51,7 @@ def webhook():
     return 'ok', 200
     
 def gen_response(user_text):
+    log("RECEIVED MSG: " + user_text)
     pov_text = sentences.changepov(user_text)
     sents = sentences.qualify(pov_text)
     if sents:
