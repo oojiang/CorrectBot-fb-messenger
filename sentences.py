@@ -16,7 +16,9 @@ def extract_verb_slices(sent_doc):
                {'POS': 'ADV', 'OP': '*'},
                {'POS': 'AUX', 'OP': '*'},
                {'POS': 'PART', 'OP': '*'},
-               {'POS': {'IN' : ['VERB', 'AUX']}, 'OP': '+'}]
+               {'POS': {'IN' : ['VERB', 'AUX']}, 'OP': '+'},
+               {'POS': 'PART', 'OP': '?'},
+               ]
     matcher = Matcher(nlp.vocab)
     matcher.add("Verb Phrase", None, pattern)
     matches = matcher(sent_doc)
