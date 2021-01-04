@@ -71,7 +71,6 @@ def negate(sent_doc, verb_slices, to_neg):
                 aux = [token for token in verb_slices[vi] if token.dep_ in ['aux', 'auxpass']]
                 verbs = [token for token in verb_slices[vi] if token.pos_ == 'VERB' or 
                     (token.pos_ == 'AUX' and token.dep_ in ['ROOT', 'ccomp', 'conj', 'xcomp'])]
-                print('DDD', verbs)
                 verb = verbs[0]
 
                 if neg:
@@ -141,18 +140,26 @@ def sent_join(sent_list):
 
 def changepov(sent_str):
     sent_doc = nlp(sent_str)
-    sent_list = []
+    sent_list = [token.text for token in sent_doc]
+    
     for token in sent_doc:
-        if token.lower_ in ["i", "me"]:
+        if token.lower_ in ['i', 'me']:
             if token.i == 0:
-                sent_list.append("You")
+                sent_list[token.i] = 'You'
             else:
-                sent_list.append("you")
-        elif token.lower_ == "you":
+                sent_list[token.i] = 'you'
             if token.dep_ == 'nsubj':
-                sent_list.append("I")
+                if token.head.lower_ == 'am':
+                    sent_list[token.head.i] = 'are'
+                elif token.head.lower_ == 'was':
+                    sent_list[token.head.i] = 'were'
+        elif token.lower_ == 'you':
+            if token.dep_ == 'nsubj':
+                sent_list[token.i] = 'I'
+                if token.head.lower_ == 'are':
+                    sent_list[token.head.i] = 'am'
+                elif token.head.lower_ == 'were':
+                    sent_list[token.head.i] = 'was'
             else:
-                sent_list.append("me")
-        else:
-            sent_list.append(token.text)
+                sent_list[token.i] = 'me'
     return sent_join(sent_list)
