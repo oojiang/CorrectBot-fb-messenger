@@ -2,7 +2,6 @@
 CorrectBot is a chatbot that attempts to always be correct by understanding the simple rule:  
 *All statements are true unless the are not.*
 
-![](images/CorrectBot-Demo.gif = 250x431)
 <img src="images/CorrectBot-Demo.gif" width="250" height="431"/>
 
 In this repository lives the code for CorrectBot's Messenger webhook.
