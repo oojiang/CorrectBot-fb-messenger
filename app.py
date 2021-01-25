@@ -66,9 +66,9 @@ def gen_response(user_text):
     sents = sentences.qualify(pov_text)
     if sents:
         out = "So, you believe: " + sents.pop(0) \
-            + "\nHave you considered that maybe: " + sents.pop(0)
+            + "\n\nHave you considered that maybe: " + sents.pop(0)
         while(sents):
-            out += "\nor maybe: " + sents.pop(0)
+            out += "\n\nor maybe: " + sents.pop(0)
         return out
     else:
         return "Hi! I believe that all things are true, unless they are not true! What is something that you believe?"

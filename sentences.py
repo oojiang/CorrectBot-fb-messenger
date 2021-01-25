@@ -1,3 +1,5 @@
+__author__ = "Oliver Jiang"
+
 import spacy
 from spacy.matcher import Matcher
 from spacy.util import filter_spans
