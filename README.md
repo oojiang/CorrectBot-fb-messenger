@@ -12,4 +12,5 @@ Try chatting with CorrectBot [here](https://oojiang.github.io/CorrectBot/) inste
 
 # Technologies
 CorrectBot's NLP is powered by Python's [SpaCy](https://spacy.io/) library. 
-Its webhook uses [Flask](https://palletsprojects.com/p/flask/) and is hosted on [Heroku](https://www.heroku.com/) for free.
+Its webhook communicates with Facebook's [Messenger API](https://developers.facebook.com/docs/messenger-platform/) 
+using [Flask](https://palletsprojects.com/p/flask/) and is hosted on [Heroku](https://www.heroku.com/) for free.
